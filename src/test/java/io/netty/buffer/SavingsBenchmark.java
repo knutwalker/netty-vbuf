@@ -1,8 +1,6 @@
 package io.netty.buffer;
 
 
-import org.junit.Test;
-
 public final class SavingsBenchmark  {
 
     private static class Savings {
@@ -89,9 +87,7 @@ public final class SavingsBenchmark  {
         return VByteBuf.wrap(regularSized(size));
     }
 
-
-    @Test
-    public void showSavings() {
+    public static void showSavings() {
         final int n = 100000000;
 
         System.out.println("     writing 7-bit long with resizing " + Savings.of(
@@ -113,6 +109,6 @@ public final class SavingsBenchmark  {
     }
 
     public static void main(final String... args) {
-        new SavingsBenchmark().showSavings();
+        showSavings();
     }
 }

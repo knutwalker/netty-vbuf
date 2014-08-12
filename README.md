@@ -9,7 +9,7 @@ Variable length encoding ByteBuf implementation.
 Overview
 --------
 
-This is a `ByteBuf` implementation, that's using [variable length encoding](http://en.wikipedia.org/wiki/Variable-length_quantity) for `int`s and `long`s to save mempry consumption and eventually cpu time.
+This is a `ByteBuf` implementation, that's using [variable length encoding](http://en.wikipedia.org/wiki/Variable-length_quantity) for `int`s and `long`s to save memory consumption and eventually cpu time.
 
 
 ## Usage
@@ -42,7 +42,7 @@ int        | regular encoding                    | variable length encoding     
 2147483647 | 01111111 11111111 11111111 11111111 | 00000111 11111111 11111111 11111111 11111111 | -25% (loss) 
 
 
-If you write many small numbers to a ByteBuf, that isn't oversized and needs to resize once in a while,
+If you write many small numbers to a ByteBuf, that isn't over sized and needs to resize once in a while,
 using variable length encoding can reduce the number of costly memory copy operations and therefore reduce used cpu time.
 
 Otherwise, the encoding adds a runtime overhead, mostly due to the repeated boundary checking for each byte, where the regular encoding would just check once for all bytes.

@@ -7,6 +7,7 @@
   <packaging>jar</packaging>
 
   <name>netty-vbuf</name>
+  <description>Variable length encoding ByteBuf implementation</description>
   <url>https://github.com/knutwalker/netty-vbuf</url>
 
   <prerequisites>

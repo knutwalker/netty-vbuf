@@ -34,11 +34,13 @@
       <groupId>com.carrotsearch.randomizedtesting</groupId>
       <artifactId>randomizedtesting-runner</artifactId>
       <version>${randomizedtesting.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
       <artifactId>netty-buffer</artifactId>
       <version>${netty.version}</version>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
 

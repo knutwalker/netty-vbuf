@@ -6,7 +6,6 @@ package io.netty.buffer;
  * Integers take between 1 and 5 bytes.
  * Longs take between 1 and 9 Bytes.
  */
-@SuppressWarnings("UnusedDeclaration")
 public final class VByteBuf extends WrappedByteBuf {
 
     private static final int HIGH_BIT_1 = 0x7F;

@@ -124,20 +124,4 @@ public final class VByteBuf extends WrappedByteBuf {
     public static ByteBuf wrap(final ByteBuf buf) {
         return new VByteBuf(buf);
     }
-
-    public static ByteBuf copy(final ByteBuf buffer, final ByteBufAllocator alloc) {
-        final ByteBuf buf;
-        final int readable = buffer.readableBytes();
-        if (readable > 0) {
-            final ByteBuf copy = buffer.isDirect()
-                    ? alloc.directBuffer(readable)
-                    : alloc.buffer(readable);
-            copy.writeBytes(buffer, buffer.readerIndex(), readable);
-            buf = new VByteBuf(copy);
-        } else {
-            buf = Unpooled.EMPTY_BUFFER;
-        }
-        buffer.release();
-        return buf;
-    }
 }

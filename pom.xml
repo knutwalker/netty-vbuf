@@ -9,7 +9,7 @@
   <packaging>jar</packaging>
 
   <name>netty-vbuf</name>
-  <url>http://maven.apache.org</url>
+  <url>https://github.com/knutwalker/netty-vbuf</url>
 
   <prerequisites>
     <maven>3.0.2</maven>
@@ -19,19 +19,21 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.6</java.version>
     <netty.version>4.0.21.Final</netty.version>
+    <junit.version>4.11</junit.version>
+    <randomizedtesting.version>2.1.6</randomizedtesting.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.carrotsearch.randomizedtesting</groupId>
       <artifactId>randomizedtesting-runner</artifactId>
-      <version>2.1.6</version>
+      <version>${randomizedtesting.version}</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
@@ -53,7 +55,7 @@
       <plugin>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>junit4-maven-plugin</artifactId>
-        <version>2.1.6</version>
+        <version>${randomizedtesting.version}</version>
         <executions>
           <execution>
             <id>tests</id>
@@ -61,6 +63,11 @@
             <goals>
               <goal>junit4</goal>
             </goals>
+            <configuration>
+              <assertions>
+                <enable package="io.netty.buffer"/>
+              </assertions>
+            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -70,7 +77,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.1</version>
         <configuration>
-          <compilerVersion>1.7</compilerVersion>
+          <compilerVersion>${java.version}</compilerVersion>
           <fork>true</fork>
           <source>${java.version}</source>
           <target>${java.version}</target>
@@ -82,11 +89,6 @@
           <meminitial>256m</meminitial>
           <maxmem>1024m</maxmem>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>versions-maven-plugin</artifactId>
-        <version>2.1</version>
       </plugin>
     </plugins>
   </build>

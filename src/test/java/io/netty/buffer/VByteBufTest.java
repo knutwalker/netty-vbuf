@@ -9,37 +9,51 @@ import org.junit.Test;
 public final class VByteBufTest extends RandomizedTest {
 
     private static void testExactIntUsage(final int minInt, final int maxInt, final int expectedBytes) {
-        final ByteBuf vintBuf = VByteBuf.wrap(Unpooled.buffer());
+        final ByteBuf vBuf = VByteBuf.wrap(Unpooled.buffer());
 
         final int number = randomIntBetween(minInt, maxInt);
 
-        vintBuf.writeInt(number);
+        vBuf.writeInt(number);
 
         Assert.assertEquals(
                 "should have only written " + expectedBytes + " byte(s)",
-                expectedBytes, vintBuf.readableBytes());
+                expectedBytes, vBuf.readableBytes());
         Assert.assertEquals(
                 "should have been able to read complete int",
-                number, vintBuf.readInt());
+                number, vBuf.readInt());
+
+        vBuf.clear();
+        vBuf.setInt(0, number);
+
+        Assert.assertEquals(
+                "should have been able to read complete int",
+                number, vBuf.getInt(0));
     }
 
     private static void testExactLongUsage(final long minLong, final long maxLong, final int expectedBytes) {
-        final ByteBuf vintBuf = VByteBuf.wrap(Unpooled.buffer());
+        final ByteBuf vBuf = VByteBuf.wrap(Unpooled.buffer());
 
         final long number = randomIntBetween((int) minLong, (int) maxLong);
 
-        vintBuf.writeLong(number);
+        vBuf.writeLong(number);
 
         Assert.assertEquals(
                 "should have only written " + expectedBytes + " byte(s)",
-                expectedBytes, vintBuf.readableBytes());
+                expectedBytes, vBuf.readableBytes());
         Assert.assertEquals(
                 "should have been able to read complete int",
-                number, vintBuf.readLong());
+                number, vBuf.readLong());
+
+        vBuf.clear();
+        vBuf.setLong(0, number);
+
+        Assert.assertEquals(
+                "should have been able to read complete int",
+                number, vBuf.getLong(0));
     }
 
     private static void testShiftedLongUsage(final long minLong, final long maxLong, final int expectedBytes) {
-        final ByteBuf vintBuf = VByteBuf.wrap(Unpooled.buffer());
+        final ByteBuf vBuf = VByteBuf.wrap(Unpooled.buffer());
 
         final int minInt = (int) (minLong >>> 32);
         final int maxInt = (int) (maxLong >>> 32);
@@ -47,14 +61,21 @@ public final class VByteBufTest extends RandomizedTest {
         final long shortNumber = randomIntBetween(minInt, maxInt);
         final long number = shortNumber << 32L | Integer.MAX_VALUE;
 
-        vintBuf.writeLong(number);
+        vBuf.writeLong(number);
 
         Assert.assertEquals(
                 "should have only written " + expectedBytes + " byte(s)",
-                expectedBytes, vintBuf.readableBytes());
+                expectedBytes, vBuf.readableBytes());
         Assert.assertEquals(
                 "should have been able to read complete int",
-                number, vintBuf.readLong());
+                number, vBuf.readLong());
+
+        vBuf.clear();
+        vBuf.setLong(0, number);
+
+        Assert.assertEquals(
+                "should have been able to read complete int",
+                number, vBuf.getLong(0));
     }
 
     @Test

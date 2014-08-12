@@ -3,6 +3,8 @@ netty-vbuf
 
 Variable length encoding ByteBuf implementation.
 
+[![Build Status](https://travis-ci.org/knutwalker/netty-vbuf.svg?branch=master)](https://travis-ci.org/knutwalker/netty-vbuf)
+[![Coverage Status](https://img.shields.io/coveralls/knutwalker/netty-vbuf.svg)](https://coveralls.io/r/knutwalker/netty-vbuf)
 
 Overview
 --------

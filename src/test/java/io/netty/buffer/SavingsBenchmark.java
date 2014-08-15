@@ -1,114 +1,135 @@
 package io.netty.buffer;
 
 
-public final class SavingsBenchmark  {
+import org.perf4j.LoggingStopWatch;
+import org.perf4j.StopWatch;
 
-    private static class Savings {
-        final double memory;
-        final double time;
+public final class SavingsBenchmark {
 
-        private Savings(final double memory, final double time) {
-            this.memory = memory;
-            this.time = time;
-        }
+  private static final class Savings {
 
-        private double getMemory() {
-            return 100 * Math.abs(memory);
-        }
+    final double memory;
 
-        private double getTime() {
-            return 100 * Math.abs(time);
-        }
+    final double time;
 
-        private static String getQuantifier(final double value) {
-            return value >= 0 ? "less" : "more";
-        }
-
-        @Override
-        public String toString() {
-            return String.format("used %.2f%% %s memory", getMemory(), getQuantifier(memory)) +
-                   String.format(" and %.2f%% %s time", getTime(), getQuantifier(time));
-        }
-
-        static Savings of(final BufferResult first, final BufferResult second) {
-            final double memory = 1 - (double) first.memory / (double) second.memory;
-            final double time = 1 - (double) first.time / (double) second.time;
-            return new Savings(memory, time);
-        }
+    private Savings(final double memory, final double time) {
+      this.memory = memory;
+      this.time = time;
     }
 
-    private static class BufferResult {
-        final long time;
-        final int memory;
-
-        private BufferResult(final long time, final int memory) {
-            this.time = time;
-            this.memory = memory;
-        }
+    private static String getQuantified(final double value) {
+      if (value >= 0.0d) {
+        return String.format("%.2f%% less", 100.0d * Math.abs(value));
+      } else {
+        return String.format("%.2f%% more", 100.0d * Math.abs(value + 1.0d));
+      }
     }
 
-    private static BufferResult makeConsumptionResult(final long start, final ByteBuf buf) {
-        final long time = System.nanoTime() - start;
-        final int memory = buf.readableBytes();
-
-        buf.clear();
-        buf.discardReadBytes();
-        buf.release();
-
-        return new BufferResult(time, memory);
+    @Override
+    public String toString() {
+      return String.format("used %s memory and %s time", getQuantified(memory),
+          getQuantified(time));
     }
 
-    private static BufferResult testBufferConsumption(final int n, final ByteBuf buf) {
-        final long start = System.nanoTime();
-        for (int i = 0; i < n; i++) {
-            buf.writeLong((long) i);
-        }
-        return makeConsumptionResult(start, buf);
+    static Savings of(final BufferResult first, final BufferResult second) {
+      final double memory = 1.0d - (double) first.memory / (double) second.memory;
+      final double time = 1.0d - (double) first.time / (double) second.time;
+      return new Savings(memory, time);
+    }
+  }
+
+  private static class BufferResult {
+
+    final long time;
+
+    final int memory;
+
+    private BufferResult(final StopWatch time, final int memory) {
+      this.time = time.getElapsedTime();
+      this.memory = memory;
+    }
+  }
+
+  private static BufferResult makeConsumptionResult(final StopWatch stopwatch, final ByteBuf buf) {
+    final int memory = buf.readableBytes();
+
+    buf.clear();
+    buf.discardReadBytes();
+    buf.release();
+
+    return new BufferResult(stopwatch, memory);
+  }
+
+  private static BufferResult testBufferConsumption(final int n, final ByteBuf buf) {
+    final StopWatch stopWatch = new LoggingStopWatch();
+    stopWatch.start();
+    for (int i = 0; i < n; i++) {
+      buf.writeLong((long) i);
+    }
+    stopWatch.stop("growing " + buf.getClass().getSimpleName());
+    return makeConsumptionResult(stopWatch, buf);
+  }
+
+  private static BufferResult testBufferConsumption(final int n, final long value,
+      final ByteBuf buf) {
+    final StopWatch stopWatch = new LoggingStopWatch();
+    stopWatch.start();
+    for (int i = 0; i < n; i++) {
+      buf.writeLong(value);
+    }
+    stopWatch.stop("7-bit " + buf.getClass().getSimpleName());
+    return makeConsumptionResult(stopWatch, buf);
+  }
+
+  private static ByteBuf regular() {
+    return Unpooled.buffer();
+  }
+
+  private static ByteBuf regularSized(final int size) {
+    return Unpooled.buffer(size * Long.SIZE);
+  }
+
+  private static ByteBuf variable() {
+    return VByteBuf.wrap(regular());
+  }
+
+  private static ByteBuf variableSized(final int size) {
+    return VByteBuf.wrap(regularSized(size));
+  }
+
+  public static void showSavings(final boolean warmup) {
+
+    System.out.println(warmup ? "Just warmup... " : "Here we go!");
+
+    final int n = 100000000;
+    final long value = 64L;
+    final Savings fixWithResizing = Savings.of(testBufferConsumption(n, value, variable()),
+        testBufferConsumption(n, value, regular()));
+    if (!warmup) {
+      System.out.println("writing 7-bit long with resizing " + fixWithResizing);
     }
 
-    private static BufferResult testBufferConsumption(final int n, final long value, final ByteBuf buf) {
-        final long start = System.nanoTime();
-        for (int i = 0; i < n; i++) {
-            buf.writeLong(value);
-        }
-        return makeConsumptionResult(start, buf);
+    final Savings growingWithResizing =
+        Savings.of(testBufferConsumption(n, variable()), testBufferConsumption(n, regular()));
+    if (!warmup) {
+      System.out.println("writing growing long with resizing " + growingWithResizing);
     }
 
-    private static ByteBuf regular() {
-        return Unpooled.buffer();
-    }
-    private static ByteBuf regularSized(final int size) {
-        return Unpooled.buffer(size * Long.SIZE);
-    }
-    private static ByteBuf variable() {
-        return VByteBuf.wrap(regular());
-    }
-    private static ByteBuf variableSized(final int size) {
-        return VByteBuf.wrap(regularSized(size));
+    final Savings fixWithoutResizing = Savings.of(testBufferConsumption(n, value, variableSized(n)),
+        testBufferConsumption(n, value, regularSized(n)));
+    if (!warmup) {
+      System.out.println("writing 7-bit long without resizing " + fixWithoutResizing);
     }
 
-    public static void showSavings() {
-        final int n = 100000000;
-
-        System.out.println("     writing 7-bit long with resizing " + Savings.of(
-                testBufferConsumption(n, 64, variable()),
-                testBufferConsumption(n, 64, regular())));
-
-        System.out.println("   writing growing long with resizing " + Savings.of(
-                testBufferConsumption(n, variable()),
-                testBufferConsumption(n, regular())));
-
-
-        System.out.println("  writing 7-bit long without resizing " + Savings.of(
-                testBufferConsumption(n, 64, variableSized(n)),
-                testBufferConsumption(n, 64, regularSized(n))));
-
-        System.out.println("writing growing long without resizing " + Savings.of(
-                testBufferConsumption(n, variableSized(n)),
-                testBufferConsumption(n, regularSized(n))));
+    final Savings growingWithoutResizing = Savings.of(testBufferConsumption(n, variableSized(n)),
+        testBufferConsumption(n, regularSized(n)));
+    if (!warmup) {
+      System.out.println("writing growing long without resizing " + growingWithoutResizing);
     }
+  }
 
-    public static void main(final String... args) {
-        showSavings();
-    }
+  public static void main(final String... args) {
+    showSavings(true);
+    showSavings(false);
+  }
 }

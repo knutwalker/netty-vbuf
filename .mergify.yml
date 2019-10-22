@@ -1,5 +1,5 @@
 pull_request_rules:
-  - name: automatic merge for Dependabot pull requests (preview)
+  - name: automatic merge for Dependabot pull requests (preview, PR)
     conditions:
       - author=dependabot-preview[bot]
       - status-success=continuous-integration/travis-ci/pr
@@ -8,10 +8,28 @@ pull_request_rules:
       merge:
         method: squash
         strict: true
-  - name: automatic merge for Dependabot pull requests
+  - name: automatic merge for Dependabot pull requests (stable, PR)
     conditions:
       - author=dependabot[bot]
       - status-success=continuous-integration/travis-ci/pr
+      - base=master
+    actions:
+      merge:
+        method: squash
+        strict: true
+  - name: automatic merge for Dependabot pull requests (preview, Push)
+    conditions:
+      - author=dependabot-preview[bot]
+      - status-success=continuous-integration/travis-ci/push
+      - base=master
+    actions:
+      merge:
+        method: squash
+        strict: true
+  - name: automatic merge for Dependabot pull requests (stable, Push)
+    conditions:
+      - author=dependabot[bot]
+      - status-success=continuous-integration/travis-ci/push
       - base=master
     actions:
       merge:
